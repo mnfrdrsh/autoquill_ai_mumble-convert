@@ -1,22 +1,28 @@
+<!-- dist/appcast.xml -->
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
     <channel>
-        <title>AutoQuill AI</title>
+        <title>AutoQuill AI Updates</title>
         <description>Most recent updates to AutoQuill AI</description>
         <language>en</language>
+        <!-- Item for the current version (replace with actual version details) -->
         <item>
-            <title>Version 1.2.0 - New Logo and Enhanced Features</title>
-            <sparkle:version>3</sparkle:version>
-            <sparkle:shortVersionString>1.2.0</sparkle:shortVersionString>
+            <title>Version 1.2.0 (Example)</title> <!-- Replace with actual version -->
             <sparkle:releaseNotesLink>
-                https://www.getautoquill.com/release-notes
+                <!-- Link to HTML release notes if you have them -->
+                <!-- https://your_domain/your_path/release_notes_1.2.0.html -->
             </sparkle:releaseNotesLink>
-            <pubDate>Sat, 01 Jun 2025 17:45:00 +0000</pubDate>
-            <enclosure url="https://www.getautoquill.com/downloads/AutoQuill-v1.2.0-notarized.zip"
-                       sparkle:edSignature="nzRxuWWjYcaSpOjplXXkthkbsV9+t0pJeYsdPRWiF1OpflfTWGdCz0RAidhAtZZ8Eva6Zp0ArPUwjd+T9JtvDQ=="
-                       sparkle:os="macos"
-                       length="24599971"
-                       type="application/octet-stream" />
+            <pubDate>Mon, 01 Jul 2024 12:00:00 +0000</pubDate> <!-- Replace with actual date -->
+
+            <!-- Windows Update Item -->
+            <enclosure
+                url="https://example.com/downloads/AutoQuill-AI-1.2.0.msi" <!-- Replace with actual download URL -->
+                sparkle:version="1.2.0" <!-- Replace with actual version -->
+                sparkle:os="windows"
+                length="0" <!-- Replace with actual file size in bytes -->
+                type="application/octet-stream"
+                sparkle:dsaSignature="YOUR_DSA_SIGNATURE_HERE" /> <!-- Replace with actual signature -->
         </item>
+        <!-- Add new items for new versions above this one -->
     </channel>
-</rss> 
+</rss>

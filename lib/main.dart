@@ -33,7 +33,31 @@ import 'features/transcription/services/smart_transcription_service.dart';
 // Import mobile main for iOS
 import 'mobile_main.dart' as mobile_main;
 
+import 'package:desktop_multi_window/desktop_multi_window.dart';
+import 'dart:convert'; // For jsonEncode
+import 'core/services/flutter_overlay_service.dart'; // Added
+
 // App lifecycle observer to cleanup when app is closed
+// Example: Call this function to show the overlay
+void showOverlayNativeWindow() async {
+  // For simplicity, not passing any specific arguments yet.
+  // args for main in overlay_main.dart will be an empty list or default.
+  final window = await DesktopMultiWindow.createWindow(jsonEncode({
+    'args1': 'overlay_window_arg_example',
+  }));
+  // 'main' here refers to the entry point function in overlay_main.dart
+  // The actual target function name in the sub-window is specified in its main()
+  // For this setup, the args are passed to the main function of the new isolate.
+  // We are calling the 'main' function of the new Dart isolate implicitly.
+  // The new window will run overlay_main.dart's main().
+
+  // Window configuration is handled by window_manager in overlay_main.dart
+  // desktop_multi_window is primarily for creating the new Flutter instance (process/isolate).
+  // We don't call window.setFrame, window.center etc. here, as overlay_main.dart handles its own setup.
+  // However, we can still show it if it's not shown automatically by window_manager in the overlay.
+  // window.show(); // window_manager.show() in overlay_main.dart should handle this.
+}
+
 class AppLifecycleObserver extends WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -45,6 +69,8 @@ class AppLifecycleObserver extends WidgetsBindingObserver {
     }
   }
 }
+
+final flutterOverlayService = FlutterOverlayService(); // Global instance
 
 void main() async {
   debugPrint(
@@ -101,6 +127,9 @@ void main() async {
 
   // Initialize dependency injection
   await di.init();
+
+  // Initialize FlutterOverlayService
+  await flutterOverlayService.init();
 
   // Initialize auto-updater (temporarily enabled for debug builds for testing)
   if (kReleaseMode || kDebugMode) {

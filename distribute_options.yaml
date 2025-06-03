@@ -1,20 +1,28 @@
-output: dist/
+# distribute_options.yaml
+output: dist/ # Output directory for distributables
+
 releases:
-  - name: prod
+  - name: prod # Production release
     jobs:
-      # Build ZIP package for auto-updates
-      - name: macos-zip
+      - name: windows-msi
         package:
-          platform: macos
-          target: zip
-          build_args:
-            dart-define:
-              APP_ENV: prod
-      # Build DMG package for distribution
-      - name: macos-dmg
-        package:
-          platform: macos
-          target: dmg
-          build_args:
-            dart-define:
-              APP_ENV: prod 
+          platform: windows
+          target: msi # Using MSI for a common Windows installer format
+          # Build arguments can be added here if needed, e.g., for different environments
+          # build_args:
+          #   dart-define:
+          #     APP_ENV: prod
+
+          # MSI specific options (optional, defaults are often fine)
+          # See flutter_distributor documentation for more options
+          # msi_options:
+          #   upgrade_code: '{YOUR_UNIQUE_UPGRADE_CODE_GUID}' # IMPORTANT: Generate a unique GUID for your app
+          #   manufacturer: 'Your Company Name'
+          #   product_name: 'AutoQuill AI'
+          #   add_to_path: true # Adds app to PATH
+
+      # Optional: A job to package as a simple ZIP if needed
+      # - name: windows-zip
+      #   package:
+      #     platform: windows
+      #     target: zip

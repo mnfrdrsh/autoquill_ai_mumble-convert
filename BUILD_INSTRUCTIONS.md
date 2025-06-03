@@ -113,4 +113,61 @@ The DMG contains:
 If you encounter issues with the build process, check:
 1. Flutter doctor: `flutter doctor`
 2. Xcode installation: `xcode-select --install`
-3. Build logs in the terminal output 
+3. Build logs in the terminal output
+
+---
+
+## Windows Build Instructions
+
+This project uses `flutter_distributor` to create Windows installers and `auto_updater` for updates.
+
+### Prerequisites:
+
+1.  **Flutter SDK**: Ensure Flutter is installed and configured for Windows development (`flutter doctor`).
+2.  **Visual Studio**: Required for C++ compilation. Make sure "Desktop development with C++" workload is installed.
+    *   **C++ ATL Tools**: The `screen_capturer` package requires "C++ ATL for latest vXXX build tools (x86 & x64)". Ensure this individual component is installed via the Visual Studio Installer.
+3.  **OpenSSL**: The `auto_updater` package requires OpenSSL for Windows to sign updates. Install it (e.g., via Chocolatey: `choco install openssl`) and ensure it's in your PATH.
+4.  **flutter_distributor**: Install it globally: `dart pub global activate flutter_distributor`.
+5.  **auto_updater tools**: The `auto_updater` package provides tools for key generation and signing.
+
+### Build Steps:
+
+1.  **Generate Keys (One-time setup per machine, or store keys securely):**
+    *   Run `dart run auto_updater:generate_keys` in the project root. This will create `dsa_priv.pem` (keep secret!) and `dsa_pub.pem`.
+    *   The `dsa_pub.pem` needs to be included in your Windows application resources. The `auto_updater` documentation suggests adding it to `windows/runner/Runner.rc`.
+        ```rc
+        // In windows/runner/Runner.rc (or a new .rc file included by it)
+        // DSAPub      DSAPEM      "../../dsa_pub.pem"
+        // Ensure the path to dsa_pub.pem is correct relative to Runner.rc
+        ```
+
+2.  **Configure `distribute_options.yaml`:**
+    *   Ensure `output` directory is set.
+    *   For MSI target, **generate a unique GUID for `upgrade_code`** (e.g., in PowerShell: `[guid]::NewGuid().ToString()`) and update it in the `msi_options`.
+    *   Update other MSI options like `manufacturer` and `product_name` as desired.
+
+3.  **Build the Installer:**
+    *   Run `flutter_distributor release --name prod --jobs windows-msi` (or the job name you defined).
+    *   The installer will be in the `dist/prod/windows-msi/` directory (or similar based on your config).
+
+4.  **Sign the Update (for `appcast.xml`):**
+    *   After building your MSI, run:
+        `dart run auto_updater:sign_update path/to/your/installer.msi`
+    *   This will output a `sparkle:dsaSignature` and `length`.
+
+5.  **Update `dist/appcast.xml`:**
+    *   Set the correct `url` to where your MSI will be hosted.
+    *   Update `sparkle:version` to the new version.
+    *   Update `length` with the file size from the sign_update tool.
+    *   Update `sparkle:dsaSignature` with the signature from the sign_update tool.
+    *   Update `<pubDate>` and `<title>`.
+    *   Host this `appcast.xml` file on a server where the application can reach it. The URL for this appcast is set in your Dart code using `autoUpdater.setFeedURL()`.
+
+### Code Signing the Installer (Recommended):
+*   For users to trust the installer, it should be code-signed using a Windows Authenticode certificate.
+*   This typically involves using tools like `signtool.exe` (part of the Windows SDK) and a certificate obtained from a Certificate Authority.
+*   `flutter_distributor` might have options to integrate code signing if configured.
+
+### Notes:
+*   The `flutter_distributor` tool handles invoking `flutter build windows` with appropriate arguments.
+*   The `auto_updater` package will check the `appcast.xml` feed URL to find new versions and trigger updates.

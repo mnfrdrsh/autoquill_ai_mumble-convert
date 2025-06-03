@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../../../../core/stats/stats_service.dart';
 import '../../../../core/theme/design_tokens.dart';
 import '../../../../widgets/enhanced_stats_card.dart';
+import '../../../../main.dart'; // Import to access showOverlayNativeWindow
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -373,6 +374,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   ),
 
                   const SizedBox(height: DesignTokens.spaceXXL),
+
+                  // Button to show the overlay window
+                  ElevatedButton(
+                    onPressed: () {
+                      // This function is defined in lib/main.dart
+                      showOverlayNativeWindow();
+                    },
+                    child: const Text("Show Flutter Overlay"),
+                  ),
+                  const SizedBox(height: DesignTokens.spaceXXL), // Extra spacing at the bottom
                 ]),
               ),
             ),

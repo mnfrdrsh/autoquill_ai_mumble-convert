@@ -24,7 +24,7 @@ class PermissionService {
       MethodChannel('com.autoquill.permissions');
 
   /// Check if the platform supports the permission system
-  static bool get isSupported => Platform.isMacOS;
+  static bool get isSupported => Platform.isMacOS || Platform.isWindows;
 
   /// Check the status of a specific permission
   static Future<PermissionStatus> checkPermission(
@@ -132,25 +132,41 @@ class PermissionService {
 
   /// Get permission description for UI
   static String getPermissionDescription(PermissionType permissionType) {
-    switch (permissionType) {
-      case PermissionType.microphone:
-        return 'AutoQuill needs microphone access to transcribe your voice recordings.';
-      case PermissionType.accessibility:
-        return 'AutoQuill needs accessibility permission to register global hotkeys and automate text insertion. Grant this in System Preferences > Privacy & Security > Accessibility.';
-      case PermissionType.screenRecording:
-        return 'AutoQuill needs screen recording permission to capture screenshots for AI context. The app will restart automatically after granting this permission.';
+    if (Platform.isWindows) {
+      switch (permissionType) {
+        case PermissionType.microphone:
+          return 'AutoQuill needs microphone access. You can manage this in Windows Settings > Privacy > Microphone.';
+        case PermissionType.accessibility:
+          // For Windows, global hotkeys and text insertion might require elevated privileges
+          // or be handled by the packages themselves. This message provides general guidance.
+          return 'For global hotkeys and text features to work reliably in all applications, AutoQuill might need to be run with administrator privileges. Accessibility settings in Windows typically refer to screen readers and other assistive technologies.';
+        case PermissionType.screenRecording:
+          // Screen capture on Windows is generally less restrictive or handled by the capturer package.
+          return 'AutoQuill uses screen capture for AI context. Ensure required system components are available if issues arise (often related to graphics drivers or specific C++ runtimes for the capture plugin).';
+      }
+    } else { // macOS original messages
+      switch (permissionType) {
+        case PermissionType.microphone:
+          return 'AutoQuill needs microphone access to transcribe your voice recordings.';
+        case PermissionType.accessibility:
+          return 'AutoQuill needs accessibility permission to register global hotkeys and automate text insertion. Grant this in System Settings > Privacy & Security > Accessibility.';
+        case PermissionType.screenRecording:
+          return 'AutoQuill needs screen recording permission to capture screenshots for AI context. The app will restart automatically after granting this permission.';
+      }
     }
   }
 
   /// Get permission title for UI
   static String getPermissionTitle(PermissionType permissionType) {
+    // Titles are generally okay, but let's ensure they make sense for Windows too.
+    // No specific changes needed for titles for now, they are generic enough.
     switch (permissionType) {
       case PermissionType.microphone:
         return 'Microphone Access';
       case PermissionType.screenRecording:
         return 'Screen Recording';
       case PermissionType.accessibility:
-        return 'Accessibility';
+        return 'Accessibility & Input Control'; // Slightly adjusted for clarity on Windows
     }
   }
 

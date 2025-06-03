@@ -15,6 +15,11 @@ class FlutterWindow : public Win32Window {
   explicit FlutterWindow(const flutter::DartProject& project);
   virtual ~FlutterWindow();
 
+  // Returns the plugin registrar.
+  flutter::PluginRegistrarWindows* GetRegistrar() {
+    return flutter_controller_->engine();
+  }
+
  protected:
   // Win32Window:
   bool OnCreate() override;
