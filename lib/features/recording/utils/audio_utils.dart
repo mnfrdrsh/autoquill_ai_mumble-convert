@@ -72,13 +72,47 @@ class AudioUtils {
   /// Estimates the duration of an audio file
   /// This is a rough estimate based on file size and typical audio formats
   static Future<Duration> estimateAudioDuration(String path) async {
-    final file = File(path);
-    final bytes = await file.readAsBytes();
+    try {
+      final file = File(path);
+      final fileSize = await file.length();
 
-    // Updated estimate for PCM WAV at 16-bit mono 16kHz: 32000 bytes per second
-    // (16 bits = 2 bytes per sample * 16000 samples per second)
-    final seconds = bytes.length / 32000;
-    return Duration(milliseconds: (seconds * 1000).toInt());
+      // Fast path for WAV files: derive duration using header fields without reading entire file
+      if (path.toLowerCase().endsWith('.wav')) {
+        // Read the standard 44-byte WAV header
+        final headerChunks = await file.openRead(0, 44).toList();
+        if (headerChunks.isNotEmpty) {
+          final header = headerChunks.first;
+          // Validate minimal header: 'RIFF' .... 'WAVE'
+          if (header.length >= 44 &&
+              header[0] == 82 && // 'R'
+              header[1] == 73 && // 'I'
+              header[2] == 70 && // 'F'
+              header[3] == 70 && // 'F'
+              header[8] == 87 && // 'W'
+              header[9] == 65 && // 'A'
+              header[10] == 86 && // 'V'
+              header[11] == 69) { // 'E'
+            // Byte rate is at offset 28-31 (little endian)
+            final byteRate = _bytesToInt(
+                Uint8List.fromList(header.sublist(28, 32)), Endian.little);
+
+            if (byteRate > 0) {
+              // Approximate audio payload size as total size minus 44-byte header
+              final payloadBytes = fileSize > 44 ? (fileSize - 44) : 0;
+              final seconds = payloadBytes / byteRate;
+              return Duration(milliseconds: (seconds * 1000).toInt());
+            }
+          }
+        }
+      }
+
+      // Generic fallback: estimate using a conservative 32,000 bytes/sec (16kHz, mono, 16-bit PCM)
+      final seconds = fileSize / 32000;
+      return Duration(milliseconds: (seconds * 1000).toInt());
+    } catch (_) {
+      // Final fallback for unexpected errors
+      return const Duration(seconds: 0);
+    }
   }
 
   /// Pads an audio file with silence to reach a minimum duration
