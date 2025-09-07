@@ -484,7 +484,7 @@ class AssistantService {
           'model': selectedModel,
           'messages': messages,
           'temperature': 0.2,
-          'max_completion_tokens': 2000,
+          'max_tokens': 2000,
           'stream': false
         };
       } else {

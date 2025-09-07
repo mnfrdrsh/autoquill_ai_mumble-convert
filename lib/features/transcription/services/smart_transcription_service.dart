@@ -132,7 +132,8 @@ class SmartTranscriptionService {
   static Future<String> enhanceTranscription(
       String originalText, String apiKey) async {
     try {
-      if (originalText.trim().isEmpty) {
+      // Skip if no content or API key provided
+      if (originalText.trim().isEmpty || apiKey.trim().isEmpty) {
         return originalText;
       }
 
@@ -146,9 +147,9 @@ class SmartTranscriptionService {
           }
         ],
         'model': _model,
-        'temperature': 0, // Lower temperature for more consistent output
-        'max_tokens':
-            originalText.length * 2, // Dynamic token limit based on input
+        'temperature': 0,
+        // Cap tokens to prevent excessive allocation; rough 4 chars per token heuristic
+        'max_tokens': (originalText.length / 4).clamp(64, 1024).toInt(),
         'top_p': 0.9,
         'stream': false,
       };
